@@ -27,8 +27,15 @@ while true; do
 done
 
 # ---------- 2  Static values ----------
+# Find latest Debian 12 template
+echo "🔍  Locating latest Debian 12 LXC template..."
 TEMPLATE_NAME=$(pveam available | grep debian-12 | sort -r | head -n 1 | awk '{print $2}')
-#TEMPLATE_NAME="debian-12-standard_12.3-1_amd64.tar.zst"
+
+if [[ -z "$TEMPLATE_NAME" ]]; then
+  echo "❌  Could not find any Debian 12 templates from pveam. Aborting."
+  exit 1
+fi
+
 TEMPLATE="local:vztmpl/$TEMPLATE_NAME"
 TEMPLATE_PATH="/var/lib/vz/template/cache/$TEMPLATE_NAME"
 STORAGE="local-lvm"
@@ -39,14 +46,16 @@ BRIDGE="vmbr0"
 TMP_HTML="/tmp/index.html"
 GITHUB_RAW="https://raw.githubusercontent.com/Nylereia/ProxMox/main/index.html"
 
+echo "✅  Using template: $TEMPLATE_NAME"
+
 # ---------- 3  Checks ----------
 
 if [[ ! -f "$TEMPLATE_PATH" ]]; then
-  echo "📦 Template $TEMPLATE_NAME not found. Downloading..."
+  echo "📦 Template $TEMPLATE_NAME not found locally. Downloading..."
   pveam update
   pveam download local "$TEMPLATE_NAME"
 else
-  echo "✅ Template $TEMPLATE_NAME already exists."
+  echo "✅ Template already downloaded."
 fi
 
 if pct status "$CTID" &>/dev/null; then
