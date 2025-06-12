@@ -30,7 +30,7 @@ done
 
 TEMPLATE="local:vztmpl/debian-12-standard_12.0-1_amd64.tar.zst"
 STORAGE="local-lvm"
-ROOTFS="2G"
+ROOTFS="2"
 MEMORY="512"
 PASSWORD="funny123"
 BRIDGE="vmbr0"
