@@ -1,2 +1,2 @@
 # ProxMox
-ProxMox script test
+sets up SSL cert for free on rasmus machine
