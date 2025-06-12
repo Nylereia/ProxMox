@@ -28,16 +28,26 @@ done
 
 # ---------- 2  Static values ----------
 
-TEMPLATE="local:vztmpl/debian-12-standard_12.0-1_amd64.tar.zst"
+TEMPLATE_NAME="debian-12-standard_12.3-1_amd64.tar.zst"
+TEMPLATE="local:vztmpl/$TEMPLATE_NAME"
+TEMPLATE_PATH="/var/lib/vz/template/cache/$TEMPLATE_NAME"
 STORAGE="local-lvm"
 ROOTFS="2"
 MEMORY="512"
 PASSWORD="funny123"
 BRIDGE="vmbr0"
 TMP_HTML="/tmp/index.html"
-GITHUB_RAW="https://raw.githubusercontent.com/YOUR_USERNAME/fun-lxc-project/main/index.html"
+GITHUB_RAW="https://raw.githubusercontent.com/Nylereia/ProxMox/main/index.html"
 
 # ---------- 3  Checks ----------
+
+if [[ ! -f "$TEMPLATE_PATH" ]]; then
+  echo "📦 Template $TEMPLATE_NAME not found. Downloading..."
+  pveam update
+  pveam download local "$TEMPLATE_NAME"
+else
+  echo "✅ Template $TEMPLATE_NAME already exists."
+fi
 
 if pct status "$CTID" &>/dev/null; then
   echo "❌  CTID $CTID already exists. Choose another."
