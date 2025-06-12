@@ -50,7 +50,7 @@ echo "🛠 Creating LXC $CTID..."
 pct create "$CTID" "$TEMPLATE" \
   --hostname "$HOSTNAME" \
   --storage "$STORAGE" \
-  --rootfs "$ROOTFS" \
+  --rootfs "$STORAGE:$ROOTFS" \
   --memory "$MEMORY" \
   --net0 name=eth0,bridge="$BRIDGE",ip="$STATIC_IP",gw="$GATEWAY" \
   --password "$PASSWORD" \
