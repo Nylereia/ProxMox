@@ -6,13 +6,13 @@ set -u
 # ---------- 1  Gather user input ----------
 
 while true; do
-  read -rp "Enter numeric container ID (CTID) [e.g. 1337]: " CTID
+  read -rp "Enter numeric container ID (CTID) [exempelvis 200]: " CTID
   [[ "$CTID" =~ ^[0-9]+$ ]] && break
   echo "❌  CTID must be a number."
 done
 
-read -rp "Enter hostname for container [default: funserver]: " HOSTNAME
-HOSTNAME=${HOSTNAME:-funserver}
+read -rp "Enter hostname for container [default: megaprutt]: " HOSTNAME
+HOSTNAME=${HOSTNAME:-megaprutt}
 
 while true; do
   read -rp "Enter static IP/CIDR (e.g. 192.168.1.100/24): " STATIC_IP
@@ -29,7 +29,8 @@ done
 # ---------- 2  Static values ----------
 # Find latest Debian 12 template
 echo "🔍  Locating latest Debian 12 LXC template..."
-TEMPLATE_NAME=$(pveam available | grep debian-12 | sort -r | head -n 1 | awk '{print $2}')
+TEMPLATE_NAME=$(pveam available | grep '^local\s\+debian-12-standard' | sort -r | awk '{print $2}' | head -n 1)
+#TEMPLATE_NAME=$(pveam available | grep debian-12 | sort -r | head -n 1 | awk '{print $2}')
 
 if [[ -z "$TEMPLATE_NAME" ]]; then
   echo "❌  Could not find any Debian 12 templates from pveam. Aborting."
