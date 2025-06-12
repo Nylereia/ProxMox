@@ -3,7 +3,7 @@
 set -e
 set -u
 
-# ---------- 1️⃣  Gather user input ----------
+# ---------- 1  Gather user input ----------
 
 while true; do
   read -rp "Enter numeric container ID (CTID) [e.g. 1337]: " CTID
@@ -26,7 +26,7 @@ while true; do
   echo "❌  Invalid IP."
 done
 
-# ---------- 2️⃣  Static values ----------
+# ---------- 2  Static values ----------
 
 TEMPLATE="local:vztmpl/debian-12-standard_12.0-1_amd64.tar.zst"
 STORAGE="local-lvm"
@@ -37,16 +37,16 @@ BRIDGE="vmbr0"
 TMP_HTML="/tmp/index.html"
 GITHUB_RAW="https://raw.githubusercontent.com/YOUR_USERNAME/fun-lxc-project/main/index.html"
 
-# ---------- 3️⃣  Checks ----------
+# ---------- 3  Checks ----------
 
 if pct status "$CTID" &>/dev/null; then
   echo "❌  CTID $CTID already exists. Choose another."
   exit 1
 fi
 
-# ---------- 4️⃣  Create the container ----------
+# ---------- 4  Create the container ----------
 
-echo "🛠️  Creating LXC $CTID..."
+echo "🛠 Creating LXC $CTID..."
 pct create "$CTID" "$TEMPLATE" \
   --hostname "$HOSTNAME" \
   --storage "$STORAGE" \
@@ -56,17 +56,19 @@ pct create "$CTID" "$TEMPLATE" \
   --password "$PASSWORD" \
   --start 1
 
-# ---------- 5️⃣  Install nginx ----------
+# ---------- 5  Install nginx ----------
 
-echo "📦  Installing nginx in container..."
+echo " Installing nginx in container..."
 pct exec "$CTID" -- bash -c "apt-get update -qq && apt-get install -y -qq nginx"
 
-# ---------- 6️⃣  Download and push HTML ----------
+# ---------- 6  Download and push HTML ----------
 
-echo "🌐  Downloading web page from GitHub..."
+echo " Downloading web page from GitHub..."
+GITHUB_RAW="https://raw.githubusercontent.com/Nylereia/ProxMox/main/index.html"
+TMP_HTML="/tmp/index.html"
 curl -fsSL "$GITHUB_RAW" -o "$TMP_HTML"
 
-echo "📄  Copying index.html to container..."
+echo " Copying index.html to container..."
 pct push "$CTID" "$TMP_HTML" /tmp/index.html
 pct exec "$CTID" -- bash -c "mv /tmp/index.html /var/www/html/index.html && chown www-data:www-data /var/www/html/index.html"
 
