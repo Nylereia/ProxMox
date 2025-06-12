@@ -96,6 +96,6 @@ pct exec "$CTID" -- bash -c "mv /tmp/index.html /var/www/html/index.html && chow
 
 IP_ADDR=$(cut -d'/' -f1 <<< "$STATIC_IP")
 echo
-echo "✅  LXC container ready"
-echo "🌐  Open http://$IP_ADDR in your browser."
-echo "🔑  Root password inside container: $PASSWORD"
+echo "✅  LXC containern är REDO"
+echo "🌐  ÖPPNA: http://$IP_ADDR I DIN WEBBLÄSARE DIN SKURK"
+echo "🔑  Containerns root-password: $PASSWORD"
