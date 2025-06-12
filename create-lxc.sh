@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+set -e
+set -u
+
+# ---------- 1️⃣  Gather user input ----------
+
+while true; do
+  read -rp "Enter numeric container ID (CTID) [e.g. 1337]: " CTID
+  [[ "$CTID" =~ ^[0-9]+$ ]] && break
+  echo "❌  CTID must be a number."
+done
+
+read -rp "Enter hostname for container [default: funserver]: " HOSTNAME
+HOSTNAME=${HOSTNAME:-funserver}
+
+while true; do
+  read -rp "Enter static IP/CIDR (e.g. 192.168.1.100/24): " STATIC_IP
+  [[ "$STATIC_IP" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}\/[0-9]{1,2}$ ]] && break
+  echo "❌  Format must be something like 192.168.1.100/24"
+done
+
+while true; do
+  read -rp "Enter gateway IP (e.g. 192.168.1.1): " GATEWAY
+  [[ "$GATEWAY" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] && break
+  echo "❌  Invalid IP."
+done
+
+# ---------- 2️⃣  Static values ----------
+
+TEMPLATE="local:vztmpl/debian-12-standard_12.0-1_amd64.tar.zst"
+STORAGE="local-lvm"
+ROOTFS="2G"
+MEMORY="512"
+PASSWORD="funny123"
+BRIDGE="vmbr0"
+TMP_HTML="/tmp/index.html"
+GITHUB_RAW="https://raw.githubusercontent.com/YOUR_USERNAME/fun-lxc-project/main/index.html"
+
+# ---------- 3️⃣  Checks ----------
+
+if pct status "$CTID" &>/dev/null; then
+  echo "❌  CTID $CTID already exists. Choose another."
+  exit 1
+fi
+
+# ---------- 4️⃣  Create the container ----------
+
+echo "🛠️  Creating LXC $CTID..."
+pct create "$CTID" "$TEMPLATE" \
+  --hostname "$HOSTNAME" \
+  --storage "$STORAGE" \
+  --rootfs "$ROOTFS" \
+  --memory "$MEMORY" \
+  --net0 name=eth0,bridge="$BRIDGE",ip="$STATIC_IP",gw="$GATEWAY" \
+  --password "$PASSWORD" \
+  --start 1
+
+# ---------- 5️⃣  Install nginx ----------
+
+echo "📦  Installing nginx in container..."
+pct exec "$CTID" -- bash -c "apt-get update -qq && apt-get install -y -qq nginx"
+
+# ---------- 6️⃣  Download and push HTML ----------
+
+echo "🌐  Downloading web page from GitHub..."
+curl -fsSL "$GITHUB_RAW" -o "$TMP_HTML"
+
+echo "📄  Copying index.html to container..."
+pct push "$CTID" "$TMP_HTML" /tmp/index.html
+pct exec "$CTID" -- bash -c "mv /tmp/index.html /var/www/html/index.html && chown www-data:www-data /var/www/html/index.html"
+
+# ---------- ✅ Done ----------
+
+IP_ADDR=$(cut -d'/' -f1 <<< "$STATIC_IP")
+echo
+echo "✅  LXC container ready"
+echo "🌐  Open http://$IP_ADDR in your browser."
+echo "🔑  Root password inside container: $PASSWORD"
