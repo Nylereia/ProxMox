@@ -26,15 +26,28 @@ while true; do
   echo "❌  Invalid IP."
 done
 
-# ---------- 2  Static values ----------
-# Find latest Debian 12 template
-echo "🔍  Locating latest Debian 12 LXC template..."
-TEMPLATE_NAME=$(pveam available | grep '^local\s\+debian-12-standard' | sort -r | awk '{print $2}' | head -n 1)
-#TEMPLATE_NAME=$(pveam available | grep debian-12 | sort -r | head -n 1 | awk '{print $2}')
+# ---------- 2  Static values & auto-template----------
+# Find the latest official Debian 12 template name (ignore turnkey)
+echo "🔍  Looking for the latest Debian 12 standard template..."
+TEMPLATE_NAME=$(pveam available | awk '$2 ~ /^debian-12-standard/ { print $2 }' | sort -r | head -n 1)
 
 if [[ -z "$TEMPLATE_NAME" ]]; then
-  echo "❌  Could not find any Debian 12 templates from pveam. Aborting."
+  echo "❌  No Debian 12 standard templates found. Aborting."
   exit 1
+fi
+
+TEMPLATE="local:vztmpl/$TEMPLATE_NAME"
+TEMPLATE_PATH="/var/lib/vz/template/cache/$TEMPLATE_NAME"
+
+echo "✅  Using template: $TEMPLATE_NAME"
+
+# Download template into 'local' if it's not already there
+if [[ ! -f "$TEMPLATE_PATH" ]]; then
+  echo "📦  Template not found in local cache. Downloading to 'local' storage..."
+  pveam update
+  pveam download local "$TEMPLATE_NAME"
+else
+  echo "✅  Template already exists in local cache."
 fi
 
 TEMPLATE="local:vztmpl/$TEMPLATE_NAME"
