@@ -27,8 +27,8 @@ while true; do
 done
 
 # ---------- 2  Static values ----------
-
-TEMPLATE_NAME="debian-12-standard_12.3-1_amd64.tar.zst"
+TEMPLATE_NAME=$(pveam available | grep debian-12 | sort -r | head -n 1 | awk '{print $2}')
+#TEMPLATE_NAME="debian-12-standard_12.3-1_amd64.tar.zst"
 TEMPLATE="local:vztmpl/$TEMPLATE_NAME"
 TEMPLATE_PATH="/var/lib/vz/template/cache/$TEMPLATE_NAME"
 STORAGE="local-lvm"
